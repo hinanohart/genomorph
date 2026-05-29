@@ -52,11 +52,18 @@ genomorph = "genomorph.cli:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/genomorph"]
+# Ship the embedded eQTL Catalogue labeled subset (CC-BY-4.0) as package data;
+# never ship downloaded model weights or backend outputs.
+artifacts = ["src/genomorph/data/**/*.tsv"]
 
 [tool.hatch.build.targets.sdist]
-# Ship the embedded eQTL Catalogue labeled subset (CC-BY-4.0) for the eval
-# harness; never ship downloaded model weights or backend outputs.
-include = ["src/genomorph", "data/eqtl_subset", "LICENSE", "NOTICE", "README.md"]
+include = ["src/genomorph", "scripts", "tests", "LICENSE", "NOTICE", "README.md"]
+artifacts = ["src/genomorph/data/**/*.tsv"]
+
+[tool.coverage.run]
+# Heavy backend inference paths require torch + multi-GB weights + a reference
+# genome and are not runnable in CI; their static interface is unit-tested.
+omit = ["*/adapters/borzoi.py", "*/adapters/enformer.py"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

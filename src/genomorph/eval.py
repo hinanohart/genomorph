@@ -25,7 +25,9 @@ uninformative by construction -- the case standard VEP cannot handle) and
 
 from __future__ import annotations
 
+import csv
 from dataclasses import asdict, dataclass
+from pathlib import Path
 
 import numpy as np
 
@@ -41,7 +43,10 @@ __all__ = [
     "baseline_raw_delta",
     "fingerprint_matrix",
     "run_benchmark",
+    "run_benchmark_multiseed",
     "BenchmarkResult",
+    "load_eqtl_subset",
+    "run_real_eval",
 ]
 
 MECHANISMS = ("shift", "loss", "gain", "broaden")
@@ -296,4 +301,75 @@ def run_benchmark_multiseed(
         },
         "claim_upheld_all_seeds": bool(all(r.claim_upheld for r in results)),
         "mad_helps_all_seeds": bool(all(r.mad_helps for r in results)),
+    }
+
+
+_EQTL_SUBSET = "macrophage_expr_vs_splice.tsv"
+
+
+def load_eqtl_subset() -> tuple[list[str], np.ndarray, list[str]]:
+    """Load the embedded eQTL Catalogue labelled subset (CC-BY-4.0).
+
+    Returns ``(variant_ids, labels, mechanism_names)`` where labels index
+    ``mechanism_names`` (``expression`` vs ``splicing``). Variant ids are
+    ``chr_pos_ref_alt`` (hg38), ready to feed to any backend.
+    """
+    data_dir = Path(__file__).resolve().parent / "data" / "eqtl_subset"
+    text = (data_dir / _EQTL_SUBSET).read_text()
+    rows = list(csv.DictReader(text.splitlines(), delimiter="\t"))
+    mech_names = sorted({r["mechanism"] for r in rows})
+    idx = {m: i for i, m in enumerate(mech_names)}
+    variant_ids = [r["variant"] for r in rows]
+    labels = np.array([idx[r["mechanism"]] for r in rows])
+    return variant_ids, labels, mech_names
+
+
+def run_real_eval(
+    backend,
+    *,
+    n_boot: int = 1000,
+    seed: int = 0,
+    max_variants: int | None = None,
+) -> dict:
+    """Run the real-data pipeline: backend -> fingerprint/baseline -> ARI.
+
+    Backend-agnostic. With the ``mock`` backend this is a *wiring smoke* only:
+    the mock effects carry no biology, so the reported ARI is meaningless and
+    is labelled ``backend_is_real=False``. A genuine result requires a real
+    sequence-to-function backend (Borzoi/Enformer) with weights and a reference
+    genome; that run is reproducible by the user and is NOT performed in CI.
+    """
+    variant_ids, labels, mech_names = load_eqtl_subset()
+    if max_variants is not None:
+        variant_ids = variant_ids[:max_variants]
+        labels = labels[:max_variants]
+    effects = [backend.predict(v) for v in variant_ids]
+    mods = list(backend.modalities)
+    k = len(mech_names)
+
+    x_fp = fingerprint_matrix(effects, mods, scale=True)
+    x_vep = baseline_vep_scalar(effects, mods)
+    pred_fp = cluster_labels(x_fp, k, seed=seed)
+    pred_vep = cluster_labels(x_vep, k, seed=seed)
+
+    ci_fp = ari_bootstrap_ci(labels, pred_fp, n_boot=n_boot, seed=seed)
+    ci_vep = ari_bootstrap_ci(labels, pred_vep, n_boot=n_boot, seed=seed)
+    diff = paired_ari_diff_ci(labels, pred_fp, pred_vep, n_boot=n_boot, seed=seed)
+
+    is_real = getattr(backend, "name", "") not in ("mock", "")
+    return {
+        "backend": getattr(backend, "name", "?"),
+        "backend_is_real": bool(is_real),
+        "n_variants": len(variant_ids),
+        "mechanisms": mech_names,
+        "modalities": mods,
+        "ari_fingerprint": vars(ci_fp),
+        "ari_vep_scalar": vars(ci_vep),
+        "diff_vs_vep": vars(diff),
+        "claim_upheld": bool(is_real and diff.excludes_zero_above),
+        "note": (
+            "REAL result"
+            if is_real
+            else "WIRING SMOKE ONLY (mock backend has no biology; ARI is meaningless)"
+        ),
     }

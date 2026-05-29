@@ -39,6 +39,27 @@ def _cmd_benchmark(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_eval_real(args: argparse.Namespace) -> int:
+    from .adapters import get_backend
+    from .eval import run_real_eval
+
+    backend_kwargs = {}
+    if args.genome_fasta:
+        backend_kwargs["genome_fasta"] = args.genome_fasta
+    backend = get_backend(args.backend, **backend_kwargs)
+    result = run_real_eval(
+        backend, n_boot=args.n_boot, seed=args.seed, max_variants=args.max_variants
+    )
+    text = json.dumps(result, indent=2)
+    if args.out:
+        with open(args.out, "w") as fh:
+            fh.write(text + "\n")
+    print(text)
+    if not result["backend_is_real"]:
+        print("\nNOTE: " + result["note"], file=sys.stderr)
+    return 0
+
+
 def _cmd_fingerprint(args: argparse.Namespace) -> int:
     from .adapters import get_backend
     from .fingerprint import FingerprintExtractor
@@ -71,6 +92,27 @@ def main(argv: list[str] | None = None) -> int:
     b.add_argument("--seed", type=int, default=0)
     b.add_argument("--out", help="write results JSON to this path")
     b.set_defaults(func=_cmd_benchmark)
+
+    e = sub.add_parser(
+        "eval-real",
+        help="run the real eQTL-Catalogue eval (mock = wiring smoke; "
+        "borzoi/enformer = real, needs weights + --genome-fasta)",
+    )
+    e.add_argument(
+        "--backend",
+        default="mock",
+        help="mock|borzoi|enformer (default: mock = smoke only)",
+    )
+    e.add_argument(
+        "--genome-fasta",
+        dest="genome_fasta",
+        help="hg38 FASTA path (required for borzoi/enformer)",
+    )
+    e.add_argument("--max-variants", dest="max_variants", type=int, default=None)
+    e.add_argument("--n-boot", type=int, default=1000, dest="n_boot")
+    e.add_argument("--seed", type=int, default=0)
+    e.add_argument("--out", help="write results JSON to this path")
+    e.set_defaults(func=_cmd_eval_real)
 
     f = sub.add_parser("fingerprint", help="fingerprint one variant via a backend")
     f.add_argument("variant", help="chr_pos_ref_alt, e.g. chr1_108004887_G_T")
