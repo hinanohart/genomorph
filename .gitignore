@@ -1,0 +1,40 @@
+# secrets / credentials (R11: never commit token values)
+.env
+*.env
+*.key
+*.pem
+*token*
+*secret*
+.genomorph-lock
+
+# model weights / large backend artifacts (NEVER bundle)
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.h5
+*.pb
+weights/
+checkpoints/
+*.fa
+*.fasta
+*.fa.gz
+*.fasta.gz
+*.2bit
+
+# large eQTL raw files (only the curated subset under data/eqtl_subset/ is tracked)
+data/raw/
+*.lbf_variable.txt.gz
+
+# python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.coverage
+htmlcov/
+.ipynb_checkpoints/

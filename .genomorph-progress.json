@@ -1,0 +1,15 @@
+{
+  "project": "genomorph",
+  "version_target": "v0.1.0a1",
+  "stage": "S6",
+  "status": "S1-S5-DONE: scaffold+OT core+fingerprint+adapters+cluster/eval+baselines; 52 tests pass; cov 85%",
+  "verdicts": {
+    "S0_license": "PASS: body Apache-2.0 / Borzoi weights MIT / Enformer Apache / eQTL Catalogue CC-BY-4.0 / AlphaGenome CC-BY-NC opt-in isolated",
+    "S0_prior_art": "PASS: gh OT x variant-track-delta = 0 hits; org genomics = 0/128; genomorph name free (pypi+gh 404)",
+    "S0_eval_data": "PASS: eQTL Catalogue susie credible_sets 2MB/dataset CI-embeddable; variant=chr_pos_ref_alt hg38; mechanism label = quant_method class (ge=expression vs leafcutter/txrev=splicing vs exon/tx), matched tissue"
+  },
+  "reservation_2_resolved": "mechanism ground-truth = quant_method class within matched tissue+study",
+  "claim_status": "headline=synthetic-mechanism-injection-ablation(measured,CI); real=eQTL-labeled-subset+harness(smoke in CI, large-scale model-inference honest-deferred unless feasible in S6)",
+  "commit_sha": null,
+  "next_action": "S6: canonical synthetic results JSON + embed real eQTL labeled subset + real harness smoke; then S7 docs"
+}
