@@ -1,0 +1,78 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  unit:
+    name: unit (py${{ matrix.python }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.10", "3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev,viz]"
+      - name: Run tests
+        run: pytest -q --cov=genomorph --cov-report=term-missing
+
+  e2e:
+    name: e2e (synthetic + real-smoke)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+      - name: Synthetic benchmark upholds the claim
+        run: |
+          genomorph benchmark --regime matched --n 40 --n-boot 300 --out bench.json
+          python scripts/ci_assert.py synthetic bench.json
+      - name: Real eQTL eval (mock = wiring smoke, must be labelled not-real)
+        run: |
+          genomorph eval-real --backend mock --n-boot 200 --out real.json
+          python scripts/ci_assert.py real-smoke real.json
+
+  hygiene:
+    name: hygiene (no secrets / weights / placeholders)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: No secret-value patterns committed
+        run: |
+          if grep -rnE 'ghp_[A-Za-z0-9]{20}|github_pat_|sk-[A-Za-z0-9]{20}|-----BEGIN (RSA |OPENSSH |EC )?PRIVATE KEY' \
+               --include='*.py' --include='*.md' --include='*.toml' --include='*.yml' \
+               src tests scripts README.md NOTICE; then
+            echo "::error::secret-value pattern committed"; exit 1
+          fi
+      - name: No model-weight or genome blobs committed
+        run: |
+          if git ls-files | grep -nE '\.(pt|pth|ckpt|safetensors|h5|pb|fa|fasta|2bit)$'; then
+            echo "::error::model weight / genome blob committed"; exit 1
+          fi
+      - name: No placeholder tokens in shipped code/docs
+        run: |
+          if grep -rnE 'MEASURED@|FIXME|XXXX|\bTODO\b' --include='*.py' --include='*.md' --include='*.toml' \
+               src README.md NOTICE; then
+            echo "::error::placeholder token in shipped code/docs"; exit 1
+          fi
+      - name: AlphaGenome non-commercial disclaimer is enforced in code
+        run: |
+          grep -qE 'NON-COMMERCIAL' src/genomorph/adapters/alphagenome.py

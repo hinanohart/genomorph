@@ -1,8 +1,8 @@
 {
   "project": "genomorph",
   "version_target": "v0.1.0a1",
-  "stage": "S7",
-  "status": "S6-DONE: synthetic headline measured (matched fp-ARI 0.568 vs vep 0.021, CI excludes 0, all-seeds); 167 real eQTL labels embedded + harness + smoke; results JSON canonical",
+  "stage": "S8",
+  "status": "S7-DONE: full README from results JSON, honest-marketing tests, 3-layer CI (unit matrix/e2e/hygiene), dependabot. ruff clean.",
   "verdicts": {
     "S0_license": "PASS: body Apache-2.0 / Borzoi weights MIT / Enformer Apache / eQTL Catalogue CC-BY-4.0 / AlphaGenome CC-BY-NC opt-in isolated",
     "S0_prior_art": "PASS: gh OT x variant-track-delta = 0 hits; org genomics = 0/128; genomorph name free (pypi+gh 404)",
@@ -11,5 +11,5 @@
   "reservation_2_resolved": "mechanism ground-truth = quant_method class within matched tissue+study",
   "claim_status": "UPHELD on synthetic matched regime (all seeds); real-model run user-reproducible/deferred (honest)",
   "commit_sha": null,
-  "next_action": "S7: full README from results JSON + honest-marketing enforcement tests + CI workflow"
+  "next_action": "S8: 3-agent critic gate (A code/math + B honest/completeness + C GitHub-state) = user monitoring trio; CRITICAL 0 to ship"
 }

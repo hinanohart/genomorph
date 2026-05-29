@@ -1,0 +1,15 @@
+version: 2
+# Keep automated security updates, but suppress routine version-bump PR noise
+# (open-pull-requests-limit: 0) so the required CI checks stay green on a
+# pre-alpha repo. Security updates are unaffected by this limit.
+updates:
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 0
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 0
