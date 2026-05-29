@@ -38,3 +38,6 @@ dist/
 .coverage
 htmlcov/
 .ipynb_checkpoints/
+
+# transient benchmark scratch (only the canonical v*_separation.json is tracked)
+results/_tmp_*.json

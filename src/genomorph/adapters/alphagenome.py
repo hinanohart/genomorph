@@ -64,14 +64,16 @@ class AlphaGenomeBackend:
 
     def _lazy(self):
         if self._client is None:
-            from alphagenome.models import dna_client
-
+            # check the key BEFORE importing the heavy SDK, so a missing key
+            # surfaces the friendly message rather than a ModuleNotFoundError.
             key = os.environ.get(self.api_key_env)
             if not key:
                 raise RuntimeError(
                     f"AlphaGenome requires an API key in ${self.api_key_env}. "
                     "genomorph reads it from your environment and never stores it."
                 )
+            from alphagenome.models import dna_client
+
             self._client = dna_client.create(key)
         return self._client
 
