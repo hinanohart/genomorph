@@ -1,9 +1,7 @@
 import json
 
-import matplotlib
 import numpy as np
-
-matplotlib.use("Agg")
+import pytest
 
 from genomorph.cli import main
 from genomorph.eval import fingerprint_matrix, generate_cohort, run_benchmark_multiseed
@@ -37,6 +35,8 @@ def test_cli_benchmark_writes_json(tmp_path):
 
 
 def test_plot_fingerprints_returns_axes():
+    matplotlib = pytest.importorskip("matplotlib")  # viz extra; skip if absent
+    matplotlib.use("Agg")
     effects, y = generate_cohort(n_per_mechanism=8, seed=0)
     x = fingerprint_matrix(effects, ["RNA", "DNASE", "H3K27ac"])
     ax = plot_fingerprints(x, y, title="t")

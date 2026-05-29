@@ -41,7 +41,8 @@ enformer = ["torch>=2.0", "enformer-pytorch>=0.8"]
 alphagenome = ["alphagenome"]
 viz = ["matplotlib>=3.6"]
 tda = ["ripser>=0.6", "persim>=0.3"]  # v0.3 backlog (contact-map topology)
-dev = ["pytest>=7", "pytest-cov>=4"]
+# dev is self-sufficient to run the full test suite (incl. the matplotlib viz test)
+dev = ["pytest>=7", "pytest-cov>=4", "matplotlib>=3.6"]
 
 [project.urls]
 Homepage = "https://github.com/hinanohart/genomorph"
