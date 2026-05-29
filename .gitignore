@@ -41,3 +41,6 @@ htmlcov/
 
 # transient benchmark scratch (only the canonical v*_separation.json is tracked)
 results/_tmp_*.json
+
+# internal autonomous-build orchestration state (not part of the package)
+.genomorph-progress.json
