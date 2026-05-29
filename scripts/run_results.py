@@ -15,10 +15,10 @@ import sys
 from pathlib import Path
 
 import numpy
+import ot as pot
 import scipy
 import sklearn
 
-import ot as pot
 from genomorph import __version__
 from genomorph.adapters import MockBackend
 from genomorph.eval import run_benchmark, run_benchmark_multiseed, run_real_eval

@@ -1,3 +1,6 @@
+# pyright: reportMissingImports=false, reportPrivateImportUsage=false
+# (optional heavy extras: torch / borzoi-pytorch / pyfaidx are installed only
+#  with the ``borzoi`` extra; the lazy imports below are guarded by that extra.)
 """Borzoi backend (optional, first-class default; weights MIT).
 
 Requires the ``borzoi`` extra (``torch``, ``borzoi-pytorch``) and a local hg38

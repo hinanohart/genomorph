@@ -41,8 +41,10 @@ enformer = ["torch>=2.0", "enformer-pytorch>=0.8"]
 alphagenome = ["alphagenome"]
 viz = ["matplotlib>=3.6"]
 tda = ["ripser>=0.6", "persim>=0.3"]  # v0.3 backlog (contact-map topology)
-# dev is self-sufficient to run the full test suite (incl. the matplotlib viz test)
-dev = ["pytest>=7", "pytest-cov>=4", "matplotlib>=3.6"]
+# dev is self-sufficient to run the full test suite (incl. the matplotlib viz
+# test) and the lint/format gate. ruff is pinned so the CI lint result is
+# reproducible and cannot drift red on a future ruff release.
+dev = ["pytest>=7", "pytest-cov>=4", "matplotlib>=3.6", "ruff==0.15.9"]
 
 [project.urls]
 Homepage = "https://github.com/hinanohart/genomorph"
@@ -69,3 +71,9 @@ omit = ["*/adapters/borzoi.py", "*/adapters/enformer.py"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
+
+[tool.ruff.lint]
+# ruff's defaults (pyflakes F + a subset of pycodestyle E) plus import sorting
+# (I). Line length (E5) is intentionally delegated to ``ruff format`` rather
+# than enforced as a lint error, so the formatter and linter never disagree.
+select = ["E4", "E7", "E9", "F", "I"]

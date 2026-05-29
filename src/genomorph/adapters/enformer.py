@@ -1,3 +1,6 @@
+# pyright: reportMissingImports=false, reportPrivateImportUsage=false
+# (optional heavy extras: torch / enformer-pytorch / pyfaidx are installed only
+#  with the ``enformer`` extra; the lazy imports below are guarded by that extra.)
 """Enformer backend (optional, code+weights Apache-2.0).
 
 Requires the ``enformer`` extra (``torch``, ``enformer-pytorch``) and a local

@@ -1,3 +1,6 @@
+# pyright: reportMissingImports=false
+# (the ``alphagenome`` SDK is an opt-in extra; the lazy imports below are
+#  guarded by that extra and by an explicit API-key check.)
 """AlphaGenome backend — OPT-IN ONLY (non-commercial).
 
 AlphaGenome's model and outputs are licensed CC-BY-NC and its Terms of Use
