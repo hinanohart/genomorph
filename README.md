@@ -1,7 +1,7 @@
 # genomorph
 
 **Optimal-transport fingerprints of regulatory-variant effect *mechanisms*.**
-Pre-alpha (v0.1.0a1) · Apache-2.0 · CPU-only core · backend-agnostic.
+Pre-alpha (v0.1.0a1) · MIT · CPU-only core · backend-agnostic.
 
 A sequence-to-function model (Borzoi, Enformer, AlphaGenome, …) predicts, for a
 variant, a REF and an ALT coverage profile per assay. The field then collapses
@@ -67,7 +67,7 @@ easy case) the fingerprint reaches ARI ≈ 0.95 vs 0.23 for the vep-scalar.
 ```bash
 pip install genomorph                      # core (numpy/scipy/scikit-learn/POT)
 pip install "genomorph[borzoi]"            # + Borzoi backend (weights MIT)
-pip install "genomorph[enformer]"          # + Enformer backend (Apache-2.0)
+pip install "genomorph[enformer]"          # + Enformer backend (MIT)
 ```
 
 ## Quickstart
@@ -114,7 +114,7 @@ All numbers come from `results/v0.1.0a1_separation.json`; none are hand-typed.
 
 ## License & data
 
-Code: Apache-2.0. Backends and the eQTL Catalogue evaluation subset carry their
-own licenses — see [NOTICE](NOTICE) for the full matrix. The embedded eQTL
+Code: MIT. Backends and the eQTL Catalogue evaluation subset carry their
+own licenses — see  for the full matrix. The embedded eQTL
 Catalogue subset is redistributed under CC-BY-4.0 (Kerimov et al., Nat Genet
 2021).

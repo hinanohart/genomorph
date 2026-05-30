@@ -8,7 +8,7 @@ version = "0.1.0a1"
 description = "Backend-agnostic optimal-transport fingerprint of regulatory-variant effect mechanisms (shape + signed mass), CPU-only."
 readme = "README.md"
 requires-python = ">=3.10"
-license = { text = "Apache-2.0" }
+license = { text = "MIT" }
 authors = [{ name = "hinanohart" }]
 keywords = [
     "genomics", "regulatory-variant", "optimal-transport", "wasserstein",
@@ -17,7 +17,7 @@ keywords = [
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: Apache Software License",
+    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
     "Topic :: Scientific/Engineering :: Bio-Informatics",
     "Operating System :: OS Independent",
@@ -60,7 +60,7 @@ packages = ["src/genomorph"]
 artifacts = ["src/genomorph/data/**/*.tsv"]
 
 [tool.hatch.build.targets.sdist]
-include = ["src/genomorph", "scripts", "tests", "LICENSE", "NOTICE", "README.md"]
+include = ["src/genomorph", "scripts", "tests", "LICENSE", "README.md"]
 artifacts = ["src/genomorph/data/**/*.tsv"]
 
 [tool.coverage.run]
