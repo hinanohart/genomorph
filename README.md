@@ -1,13 +1,18 @@
 # genomorph
 
-**Optimal-transport fingerprints of regulatory-variant effect *mechanisms*.**
+**Optimal-transport fingerprints of regulatory-variant effect *mechanisms*.**  
 Pre-alpha (v0.1.0a1) · MIT · CPU-only core · backend-agnostic.
 
-A sequence-to-function model (Borzoi, Enformer, AlphaGenome, …) predicts, for a
-variant, a REF and an ALT coverage profile per assay. The field then collapses
-each track to a single effect-size scalar. genomorph keeps the **shape**: it
-treats the REF→ALT difference as a measure on genomic coordinates and
-decomposes it into
+**genomorph converts REF→ALT coverage tracks from any sequence-to-function model
+into a compact shape fingerprint that separates regulatory mechanisms (shift /
+loss / gain / broadening) that a plain magnitude scalar conflates.**
+
+> genomorph never predicts variant effects itself and bundles no model weights.
+> It is a *representation + evaluation* layer on top of whatever backend you use.
+
+The field typically collapses each track to a single effect-size scalar.
+genomorph keeps the **shape**: it treats the REF→ALT difference as a measure on
+genomic coordinates and decomposes it into
 
 * a **shape** term — the 1-D Wasserstein-1 distance between the mass-normalised
   REF and ALT profiles (how the signal *redistributed*), and
@@ -18,8 +23,41 @@ difference) and a support-width ratio. The result is a small fixed-dimension
 **fingerprint** that distinguishes mechanisms a magnitude scalar conflates:
 a peak **shift** vs a **loss** vs a **gain** vs a **broadening**.
 
-> genomorph never predicts variant effects itself and bundles no model weights.
-> It is a *representation + evaluation* layer on top of whatever backend you use.
+---
+
+## Install
+
+```bash
+pip install genomorph                      # core (numpy/scipy/scikit-learn/POT)
+pip install "genomorph[borzoi]"            # + Borzoi backend (weights MIT)
+pip install "genomorph[enformer]"          # + Enformer backend (Apache-2.0)
+```
+
+---
+
+## Quickstart
+
+```bash
+# Reproduce the headline synthetic benchmark
+genomorph benchmark --regime matched --out results.json
+
+# Fingerprint one variant (mock backend = no weights needed, for wiring/demo)
+genomorph fingerprint chr1_108004887_G_T --backend mock
+
+# Real eQTL-Catalogue evaluation:
+#   mock  -> wiring smoke (fast, ARI meaningless, clearly labelled)
+genomorph eval-real --backend mock
+#   borzoi/enformer -> genuine (needs weights + hg38 FASTA)
+genomorph eval-real --backend enformer --genome-fasta /path/hg38.fa
+```
+
+```python
+import genomorph as gm
+
+backend = gm.get_backend("mock")                 # or "borzoi" / "enformer"
+effect = backend.predict("chr1_108004887_G_T")   # -> VariantEffect (REF/ALT tracks)
+fp = gm.FingerprintExtractor(backend.modalities).transform_one(effect)
+```
 
 ---
 
@@ -38,6 +76,26 @@ flowchart TD
     ScaledVec --> Viz[Oklab visualisation]
     Baseline[vep-scalar baseline<br>per-modality L2 magnitude] --> ARI
 ```
+
+---
+
+## How the fingerprint works
+
+For each assay modality the extractor computes five numbers from the REF and ALT
+coverage tracks:
+
+| feature | what it captures |
+|---------|-----------------|
+| `w1_shape` | Wasserstein-1 between mass-normalised REF and ALT — how far the signal *distribution* moved |
+| `sign_shift` | signed centroid shift (bp): direction of movement |
+| `mass_delta` | net change in total signal: gain vs loss |
+| `jordan_w1` | spatial separation of gain region from loss region (Jordan decomposition) |
+| `width_ratio` | ALT support width / REF support width: broadening vs sharpening |
+
+Each variant therefore maps to a vector of length `5 × num_modalities`. Before
+clustering, `MADScaler` (median / 1.4826 × MAD) is applied per feature across
+the cohort — this is the single most load-bearing normalisation step for
+cross-modality comparability.
 
 ---
 
@@ -81,62 +139,6 @@ easy case) the fingerprint reaches ARI ≈ 0.95 vs 0.23 for the vep-scalar.
   ARI is meaningless and labelled as such.
 * **No backend weights or backend outputs are bundled or redistributed.**
 * The AlphaGenome backend is **opt-in and non-commercial** (see NOTICE).
-
----
-
-## Install
-
-```bash
-pip install genomorph                      # core (numpy/scipy/scikit-learn/POT)
-pip install "genomorph[borzoi]"            # + Borzoi backend (weights MIT)
-pip install "genomorph[enformer]"          # + Enformer backend (Apache-2.0)
-```
-
----
-
-## Quickstart
-
-```bash
-# Reproduce the headline synthetic benchmark
-genomorph benchmark --regime matched --out results.json
-
-# Fingerprint one variant (mock backend = no weights needed, for wiring/demo)
-genomorph fingerprint chr1_108004887_G_T --backend mock
-
-# Real eQTL-Catalogue evaluation:
-#   mock  -> wiring smoke (fast, ARI meaningless, clearly labelled)
-genomorph eval-real --backend mock
-#   borzoi/enformer -> genuine (needs weights + hg38 FASTA)
-genomorph eval-real --backend enformer --genome-fasta /path/hg38.fa
-```
-
-```python
-import genomorph as gm
-
-backend = gm.get_backend("mock")                 # or "borzoi" / "enformer"
-effect = backend.predict("chr1_108004887_G_T")   # -> VariantEffect (REF/ALT tracks)
-fp = gm.FingerprintExtractor(backend.modalities).transform_one(effect)
-```
-
----
-
-## How the fingerprint works
-
-For each assay modality the extractor computes five numbers from the REF and ALT
-coverage tracks:
-
-| feature | what it captures |
-|---------|-----------------|
-| `w1_shape` | Wasserstein-1 between mass-normalised REF and ALT — how far the signal *distribution* moved |
-| `sign_shift` | signed centroid shift (bp): direction of movement |
-| `mass_delta` | net change in total signal: gain vs loss |
-| `jordan_w1` | spatial separation of gain region from loss region (Jordan decomposition) |
-| `width_ratio` | ALT support width / REF support width: broadening vs sharpening |
-
-Each variant therefore maps to a vector of length `5 × num_modalities`. Before
-clustering, `MADScaler` (median / 1.4826 × MAD) is applied per feature across
-the cohort — this is the single most load-bearing normalisation step for
-cross-modality comparability.
 
 ---
 
