@@ -27,16 +27,16 @@ a peak **shift** vs a **loss** vs a **gain** vs a **broadening**.
 
 ```mermaid
 flowchart TD
-    Variant[Variant ID] --> Backend[Sequence-to-function Backend\nBorzoi / Enformer / mock]
-    Backend --> VariantEffect[VariantEffect\nREF and ALT tracks per modality]
-    VariantEffect --> FP[FingerprintExtractor\nw1_shape sign_shift mass_delta\njordan_w1 width_ratio per modality]
-    FP --> RawVec[Raw fingerprint vector\n5 x num_modalities dims]
-    RawVec --> MAD[MADScaler\nrobust cohort normalisation]
-    MAD --> ScaledVec[Scaled fingerprint matrix\nn_variants x dims]
-    ScaledVec --> Cluster[Clustering\nk-means or agglomerative]
-    Cluster --> ARI[ARI evaluation\nvs mechanism labels]
+    Variant[Variant ID] --> Backend[Sequence-to-function Backend<br>Borzoi / Enformer / mock]
+    Backend --> VariantEffect[VariantEffect<br>REF and ALT tracks per modality]
+    VariantEffect --> FP[FingerprintExtractor<br>w1_shape sign_shift mass_delta<br>jordan_w1 width_ratio per modality]
+    FP --> RawVec[Raw fingerprint vector<br>5 x num_modalities dims]
+    RawVec --> MAD[MADScaler<br>robust cohort normalisation]
+    MAD --> ScaledVec[Scaled fingerprint matrix<br>n_variants x dims]
+    ScaledVec --> Cluster[Clustering<br>k-means or agglomerative]
+    Cluster --> ARI[ARI evaluation<br>vs mechanism labels]
     ScaledVec --> Viz[Oklab visualisation]
-    Baseline[vep-scalar baseline\nper-modality L2 magnitude] --> ARI
+    Baseline[vep-scalar baseline<br>per-modality L2 magnitude] --> ARI
 ```
 
 ---
