@@ -21,6 +21,26 @@ a peak **shift** vs a **loss** vs a **gain** vs a **broadening**.
 > genomorph never predicts variant effects itself and bundles no model weights.
 > It is a *representation + evaluation* layer on top of whatever backend you use.
 
+---
+
+## Architecture overview
+
+```mermaid
+flowchart TD
+    Variant[Variant ID] --> Backend[Sequence-to-function Backend\nBorzoi / Enformer / mock]
+    Backend --> VariantEffect[VariantEffect\nREF and ALT tracks per modality]
+    VariantEffect --> FP[FingerprintExtractor\nw1_shape sign_shift mass_delta\njordan_w1 width_ratio per modality]
+    FP --> RawVec[Raw fingerprint vector\n5 x num_modalities dims]
+    RawVec --> MAD[MADScaler\nrobust cohort normalisation]
+    MAD --> ScaledVec[Scaled fingerprint matrix\nn_variants x dims]
+    ScaledVec --> Cluster[Clustering\nk-means or agglomerative]
+    Cluster --> ARI[ARI evaluation\nvs mechanism labels]
+    ScaledVec --> Viz[Oklab visualisation]
+    Baseline[vep-scalar baseline\nper-modality L2 magnitude] --> ARI
+```
+
+---
+
 ## The one claim
 
 > On a controlled synthetic benchmark where each variant carries a known
@@ -62,6 +82,8 @@ easy case) the fingerprint reaches ARI ≈ 0.95 vs 0.23 for the vep-scalar.
 * **No backend weights or backend outputs are bundled or redistributed.**
 * The AlphaGenome backend is **opt-in and non-commercial** (see NOTICE).
 
+---
+
 ## Install
 
 ```bash
@@ -69,6 +91,8 @@ pip install genomorph                      # core (numpy/scipy/scikit-learn/POT)
 pip install "genomorph[borzoi]"            # + Borzoi backend (weights MIT)
 pip install "genomorph[enformer]"          # + Enformer backend (MIT)
 ```
+
+---
 
 ## Quickstart
 
@@ -94,6 +118,28 @@ effect = backend.predict("chr1_108004887_G_T")   # -> VariantEffect (REF/ALT tra
 fp = gm.FingerprintExtractor(backend.modalities).transform_one(effect)
 ```
 
+---
+
+## How the fingerprint works
+
+For each assay modality the extractor computes five numbers from the REF and ALT
+coverage tracks:
+
+| feature | what it captures |
+|---------|-----------------|
+| `w1_shape` | Wasserstein-1 between mass-normalised REF and ALT — how far the signal *distribution* moved |
+| `sign_shift` | signed centroid shift (bp): direction of movement |
+| `mass_delta` | net change in total signal: gain vs loss |
+| `jordan_w1` | spatial separation of gain region from loss region (Jordan decomposition) |
+| `width_ratio` | ALT support width / REF support width: broadening vs sharpening |
+
+Each variant therefore maps to a vector of length `5 × num_modalities`. Before
+clustering, `MADScaler` (median / 1.4826 × MAD) is applied per feature across
+the cohort — this is the single most load-bearing normalisation step for
+cross-modality comparability.
+
+---
+
 ## How the benchmark is fair
 
 The baseline is the *same backend output*, summarised the way the field
@@ -102,6 +148,8 @@ the **full per-bin difference** (no information discarded). The fingerprint beat
 both. To pre-empt a "magnitude was rigged useless" objection we report two
 regimes — `matched` (magnitude uninformative by construction) and `natural`.
 All numbers come from `results/v0.1.0a1_separation.json`; none are hand-typed.
+
+---
 
 ## Scope
 
@@ -112,9 +160,11 @@ All numbers come from `results/v0.1.0a1_separation.json`; none are hand-typed.
   information-geometry features.
 * **v0.3:** contact-map topological (persistent-homology) features.
 
+---
+
 ## License & data
 
 Code: MIT. Backends and the eQTL Catalogue evaluation subset carry their
-own licenses — see  for the full matrix. The embedded eQTL
+own licenses — see NOTICE for the full matrix. The embedded eQTL
 Catalogue subset is redistributed under CC-BY-4.0 (Kerimov et al., Nat Genet
 2021).
