@@ -89,7 +89,7 @@ easy case) the fingerprint reaches ARI ≈ 0.95 vs 0.23 for the vep-scalar.
 ```bash
 pip install genomorph                      # core (numpy/scipy/scikit-learn/POT)
 pip install "genomorph[borzoi]"            # + Borzoi backend (weights MIT)
-pip install "genomorph[enformer]"          # + Enformer backend (MIT)
+pip install "genomorph[enformer]"          # + Enformer backend (Apache-2.0)
 ```
 
 ---
