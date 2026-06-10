@@ -1,0 +1,52 @@
+direction: down
+explanation: |md
+  ### genomorph
+  **Optimal-transport fingerprints of regulatory-variant effect mechanisms.**
+| {near: top-center}
+
+variant: "① Variant ID" {shape: oval; style: {fill: "#6366f1"; font-color: "#fff"; stroke: "#4338ca"; bold: true; font-size: 18}}
+
+backends: "Sequence-to-Function Backends" {
+  style: {fill: "#fffbeb"; stroke: "#f59e0b"; font-color: "#92400e"; bold: true; font-size: 16}
+  backend: "② Borzoi / Enformer / mock"
+  backend.style.fill: "#fef3c7"; backend.style.font-color: "#92400e"
+}
+variant -> backends.backend: "② query"
+
+vareff: "③ VariantEffect\nREF and ALT tracks per modality" {style: {fill: "#0ea5e9"; font-color: "#fff"; stroke: "#0369a1"; bold: true; font-size: 18}}
+backends.backend -> vareff: "③ compute"
+
+fp: "④ FingerprintExtractor\nw1_shape sign_shift mass_delta\njordan_w1 width_ratio per modality" {style: {fill: "#dcfce7"; font-color: "#065f46"; stroke: "#10b981"; bold: true; font-size: 16}}
+vareff -> fp: "④ extract"
+
+rawvec: "⑤ Raw fingerprint vector\n5 x num_modalities dims" {style: {fill: "#dcfce7"; font-color: "#065f46"; stroke: "#10b981"; bold: true}}
+fp -> rawvec: "⑤ build"
+
+mad: "⑥ MADScaler\nrobust cohort normalisation" {style: {fill: "#0ea5e9"; font-color: "#fff"; stroke: "#0369a1"; bold: true}}
+rawvec -> mad: "⑥ scale"
+
+scaled: "⑦ Scaled fingerprint matrix\nn_variants x dims" {style: {fill: "#dcfce7"; font-color: "#065f46"; stroke: "#10b981"; bold: true}}
+mad -> scaled: "⑦ normalize"
+
+outputs: "Outputs" {
+  style: {fill: "#fdf2f8"; stroke: "#ec4899"; font-color: "#9d174e"; bold: true; font-size: 16}
+  cluster: "⑧ Clustering\nk-means or agglomerative"
+  viz: "Oklab visualisation"
+  ari: "⑨ ARI evaluation\nvs mechanism labels"
+  cluster.style.fill: "#fdf2f8"; cluster.style.font-color: "#9d174e"
+  viz.style.fill: "#fdf2f8"; viz.style.font-color: "#9d174e"
+  ari.style.fill: "#fdf2f8"; ari.style.font-color: "#9d174e"
+}
+scaled -> outputs.cluster: "⑧ cluster"
+scaled -> outputs.viz: "visualize"
+outputs.cluster -> outputs.ari: "⑨ evaluate"
+
+baseline: "vep-scalar baseline\nper-modality L2 magnitude" {style: {fill: "#fef3c7"; font-color: "#92400e"; stroke: "#f59e0b"; bold: true}}
+baseline -> outputs.ari: "compare"
+
+legend: "Legend" {
+  near: bottom-center
+  style: {fill: "#f8fafc"; stroke: "#cbd5e1"; font-size: 13}
+  e: "● entry"; c: "● core"; p: "● processing"; b: "● external"; d: "● output"
+  e.style.font-color: "#4338ca"; c.style.font-color: "#0369a1"; p.style.font-color: "#10b981"; b.style.font-color: "#f59e0b"; d.style.font-color: "#ec4899"
+}

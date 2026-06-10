@@ -63,19 +63,9 @@ fp = gm.FingerprintExtractor(backend.modalities).transform_one(effect)
 
 ## Architecture overview
 
-```mermaid
-flowchart TD
-    Variant[Variant ID] --> Backend[Sequence-to-function Backend<br>Borzoi / Enformer / mock]
-    Backend --> VariantEffect[VariantEffect<br>REF and ALT tracks per modality]
-    VariantEffect --> FP[FingerprintExtractor<br>w1_shape sign_shift mass_delta<br>jordan_w1 width_ratio per modality]
-    FP --> RawVec[Raw fingerprint vector<br>5 x num_modalities dims]
-    RawVec --> MAD[MADScaler<br>robust cohort normalisation]
-    MAD --> ScaledVec[Scaled fingerprint matrix<br>n_variants x dims]
-    ScaledVec --> Cluster[Clustering<br>k-means or agglomerative]
-    Cluster --> ARI[ARI evaluation<br>vs mechanism labels]
-    ScaledVec --> Viz[Oklab visualisation]
-    Baseline[vep-scalar baseline<br>per-modality L2 magnitude] --> ARI
-```
+<div align="center">
+  <img src="docs/architecture.png" alt="genomorph architecture" width="840">
+</div>
 
 ---
 
@@ -170,3 +160,4 @@ Code: MIT. Backends and the eQTL Catalogue evaluation subset carry their
 own licenses — see NOTICE for the full matrix. The embedded eQTL
 Catalogue subset is redistributed under CC-BY-4.0 (Kerimov et al., Nat Genet
 2021).
+
